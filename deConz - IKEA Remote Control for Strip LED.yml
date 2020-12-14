@@ -137,7 +137,7 @@ action:
     - service: light.turn_on
       target: !input 'light'
       data:
-        effect: |
+        effect: >-
           {% set effects=state_attr(light_entity, "effect_list") %}
           {% set effect_count=effects|length  %}
           {% set effect_index=effects.index(state_attr(light_entity, "effect")) %}
@@ -151,7 +151,7 @@ action:
     - service:
       target: !input 'light'
       data:
-        effect: |
+        effect: >-
           {% set effects=state_attr(light_entity, "effect_list") %}
           {% set effect_count=effects|length  %}
           {% set effect_index=effects.index(state_attr(light_entity, "effect")) %}
