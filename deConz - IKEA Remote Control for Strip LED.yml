@@ -74,9 +74,9 @@ action:
 - variables:
     event: '{{ trigger.event.data.event }}'
     light_entity: !input 'light'
-    effects: {{ state_attr(light_entity, "effect_list") }}
+    effects: {{ state_attr(light_entity,'effect_list') }}
     effect_count: {{ effects|length }}
-    effect_index: {{ effects.index(state_attr(light_entity, "effect")) }}
+    effect_index: {{ effects.index(state_attr(light_entity,'effect')) }}
 - choose:
   - conditions:
     - '{{ event == 1002 }}'
