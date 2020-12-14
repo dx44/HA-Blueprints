@@ -154,7 +154,6 @@ action:
           {% set effect_count=effects|length  %}
           {% set effect_index=effects.index(state_attr(light_entity, "effect")) %}
           {{ effects[(effect_index|int - 1 ) % effect_count] }}
-
   - conditions:
     - '{{ event == 5001 }}'
     sequence: !input 'button_right_long'
