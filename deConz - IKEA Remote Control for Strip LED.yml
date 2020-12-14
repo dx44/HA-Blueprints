@@ -74,6 +74,9 @@ action:
 - variables:
     event: '{{ trigger.event.data.event }}'
     light_entity: !input 'light'
+    effects: {{ state_attr(light_entity, "effect_list") }}
+    effect_count: {{ effects|length }}
+    effect_index: {{ effects.index(state_attr(light_entity, "effect")) }}
 - choose:
   - conditions:
     - '{{ event == 1002 }}'
@@ -137,11 +140,7 @@ action:
     - service: light.turn_on
       target: !input 'light'
       data:
-        effect: >-
-          {% set effects=state_attr(light_entity, "effect_list") %}
-          {% set effect_count=effects|length  %}
-          {% set effect_index=effects.index(state_attr(light_entity, "effect")) %}
-          {{ effects[(effect_index|int + 1 ) % effect_count] }}
+        effect: {{ effects[(effect_index|int + 1 ) % effect_count] }}
   - conditions:
     - '{{ event == 5001 }}'
     sequence: !input 'button_left_long'
@@ -151,11 +150,7 @@ action:
     - service:
       target: !input 'light'
       data:
-        effect: >-
-          {% set effects=state_attr(light_entity, "effect_list") %}
-          {% set effect_count=effects|length  %}
-          {% set effect_index=effects.index(state_attr(light_entity, "effect")) %}
-          {{ effects[(effect_index|int - 1 ) % effect_count] }}
+        effect: {{ effects[(effect_index|int - 1 ) % effect_count] }}
   - conditions:
     - '{{ event == 5001 }}'
     sequence: !input 'button_right_long'
