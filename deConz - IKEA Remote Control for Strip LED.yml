@@ -147,6 +147,8 @@ action:
     sequence: !input 'button_left_long'
   - conditions:
     - '{{ event == 4002 }}'
+    sequence:
+    - service:
       target: !input 'light'
       data:
         effect: |
