@@ -73,13 +73,13 @@ trigger:
 action:
 - variables:
     event: '{{ trigger.event.data.event }}'
-    light_entity: !input 'light'
-    effects: '{{ state_attr(light_entity,"effect_list") }}'
-    effect_name: '{{ state_attr(light_entity,"effect")|default(effects[0],true) }}'
+    entity: !input 'light'
+    effects: '{{ state_attr(entity,"effect_list") }}'
+    effect_name: '{{ state_attr(entity,"effect")|default(effects[0],true) }}'
     effect_count: '{{ effects|length }}'
     effect_index: '{{ effects.index(effect_name) }}'
 - choose:
-  - conditions:
+  - conditions: # On/Off toggle
     - '{{ event == 1002 }}'
     sequence:
     - choose:
@@ -95,7 +95,7 @@ action:
         target: !input 'light'
         data:
           transition: 1
-  - conditions:
+  - conditions: # Brighter
     - '{{ event == 2002 }}'
     sequence:
     - service: light.turn_on
@@ -105,7 +105,7 @@ action:
         transition: 1
   - conditions:
     - '{{ event == 2001 }}'
-    sequence:
+    sequence: # Brighter (more)
     - repeat:
         count: 10
         sequence:
@@ -115,7 +115,7 @@ action:
             brightness_step_pct: 10
             transition: 1
         - delay: 1
-  - conditions:
+  - conditions: # Brightness
     - '{{ event == 3002 }}'
     sequence:
     - service: light.turn_on
@@ -123,7 +123,7 @@ action:
       data:
         brightness_step_pct: -10
         transition: 1
-  - conditions:
+  - conditions: # Brightness (more)
     - '{{ event == 3001 }}'
     sequence:
     - repeat:
@@ -135,23 +135,23 @@ action:
             brightness_step_pct: -10
             transition: 1
         - delay: 1
-  - conditions:
+  - conditions: # Next effect
     - '{{ event == 5002 }}'
     sequence:
     - service: light.turn_on
       target: !input 'light'
       data:
-        effect: '{{ effects[(effect_index|int + 1 ) % effect_count] }}'
-  - conditions:
+        effect: '{{ effects[(effect_index + 1 ) % effect_count] }}'
+  - conditions: # Long press on right
     - '{{ event == 5001 }}'
     sequence: !input 'button_left_long'
-  - conditions:
+  - conditions: # Previous effect
     - '{{ event == 4002 }}'
     sequence:
     - service:
       target: !input 'light'
       data:
-        effect: '{{ effects[(effect_index|int - 1 ) % effect_count] }}'
-  - conditions:
-    - '{{ event == 5001 }}'
-    sequence: !input 'button_right_long'
+        effect: '{{ effects[(effect_index - 1 ) % effect_count] }}'
+  - conditions: # Long press on left
+    - '{{ event == 4001 }}'
+    sequence: !input 'button_left_long'
