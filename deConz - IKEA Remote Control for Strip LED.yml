@@ -25,12 +25,12 @@ blueprint:
       name: Light(s)
       description: The light(s) to control
       selector:
-        target:
-          entity:
-            domain: light
+        entity:
+          domain: light
     force_brightness:
       name: Force turn on brightness
-      description: 'Force the brightness to the set level below, when the "on" button
+      description:
+        'Force the brightness to the set level below, when the "on" button
         on the remote is pushed and lights turn on.
 
         '
@@ -47,7 +47,7 @@ blueprint:
           max: 100.0
           mode: slider
           step: 1.0
-          unit_of_measurement: '%'
+          unit_of_measurement: "%"
     button_left_long:
       name: Left button - long press
       description: Action to run on long left button press
@@ -64,100 +64,100 @@ blueprint:
 mode: restart
 max_exceeded: silent
 variables:
-  force_brightness: !input 'force_brightness'
+  force_brightness: !input "force_brightness"
+  entity: !input "light"
 trigger:
-- platform: event
-  event_type: deconz_event
-  event_data:
-    device_id: !input 'remote'
+  - platform: event
+    event_type: deconz_event
+    event_data:
+      device_id: !input "remote"
 action:
-- variables:
-    event: '{{ trigger.event.data.event }}'
-    entity: !input 'light'
-    effects: '{{ state_attr(entity,"effect_list") }}'
-    effect_name: >
-      {% set current_effect = state_attr(entity,"effect") %}
-      {% if current_effect == None %}
-        {{ effects[0] }}
-      {% else %}
-        {{ current_effect }}
-      {% endif %}
-    effect_count: '{{ effects|length }}'
-    effect_index: '{{ effects.index(effect_name) }}'
-- choose:
-  - conditions: # On/Off toggle
-    - '{{ event == 1002 }}'
-    sequence:
-    - choose:
-      - conditions: '{{ force_brightness }}'
+  - variables:
+      event: "{{ trigger.event.data.event }}"
+      effects: '{{ state_attr(entity,"effect_list") }}'
+      effect_name: >
+        {% set current_effect = state_attr(entity,"effect") %}
+        {% if current_effect == None %}
+          {{ effects[0] }}
+        {% else %}
+          {{ current_effect }}
+        {% endif %}
+      effect_count: "{{ effects|length }}"
+      effect_index: "{{ effects.index(effect_name) }}"
+  - choose:
+      - conditions: # On/Off toggle
+          - "{{ event == 1002 }}"
         sequence:
-        - service: light.toggle
-          target: !input 'light'
-          data:
-            transition: 1
-            brightness_pct: !input 'brightness'
-      default:
-      - service: light.toggle
-        target: !input 'light'
-        data:
-          transition: 1
-  - conditions: # Brighter
-    - '{{ event == 2002 }}'
-    sequence:
-    - service: light.turn_on
-      target: !input 'light'
-      data:
-        brightness_step_pct: 10
-        transition: 1
-  - conditions:
-    - '{{ event == 2001 }}'
-    sequence: # Brighter (more)
-    - repeat:
-        count: 10
+          - choose:
+              - conditions: "{{ force_brightness }}"
+                sequence:
+                  - service: light.toggle
+                    entity_id: !input "light"
+                    data:
+                      transition: 1
+                      brightness_pct: !input "brightness"
+            default:
+              - service: light.toggle
+                entity_id: !input "light"
+                data:
+                  transition: 1
+      - conditions: # Brighter
+          - "{{ event == 2002 }}"
         sequence:
-        - service: light.turn_on
-          target: !input 'light'
-          data:
-            brightness_step_pct: 10
-            transition: 1
-        - delay: 1
-  - conditions: # Brightness
-    - '{{ event == 3002 }}'
-    sequence:
-    - service: light.turn_on
-      target: !input 'light'
-      data:
-        brightness_step_pct: -10
-        transition: 1
-  - conditions: # Brightness (more)
-    - '{{ event == 3001 }}'
-    sequence:
-    - repeat:
-        count: 10
+          - service: light.turn_on
+            entity_id: !input "light"
+            data:
+              brightness_step_pct: 10
+              transition: 1
+      - conditions:
+          - "{{ event == 2001 }}"
+        sequence: # Brighter (more)
+          - repeat:
+              count: 10
+              sequence:
+                - service: light.turn_on
+                  entity_id: !input "light"
+                  data:
+                    brightness_step_pct: 10
+                    transition: 1
+                - delay: 1
+      - conditions: # Brightness
+          - "{{ event == 3002 }}"
         sequence:
-        - service: light.turn_on
-          target: !input 'light'
-          data:
-            brightness_step_pct: -10
-            transition: 1
-        - delay: 1
-  - conditions: # Next effect
-    - '{{ event == 5002 }}'
-    sequence:
-    - service: light.turn_on
-      target: !input 'light'
-      data:
-        effect: '{{ effects[(effect_index + 1 ) % effect_count] }}'
-  - conditions: # Long press on right
-    - '{{ event == 5001 }}'
-    sequence: !input 'button_left_long'
-  - conditions: # Previous effect
-    - '{{ event == 4002 }}'
-    sequence:
-    - service:
-      target: !input 'light'
-      data:
-        effect: '{{ effects[(effect_index - 1 ) % effect_count] }}'
-  - conditions: # Long press on left
-    - '{{ event == 4001 }}'
-    sequence: !input 'button_left_long'
+          - service: light.turn_on
+            entity_id: !input "light"
+            data:
+              brightness_step_pct: -10
+              transition: 1
+      - conditions: # Brightness (more)
+          - "{{ event == 3001 }}"
+        sequence:
+          - repeat:
+              count: 10
+              sequence:
+                - service: light.turn_on
+                  entity_id: !input "light"
+                  data:
+                    brightness_step_pct: -10
+                    transition: 1
+                - delay: 1
+      - conditions: # Next effect
+          - "{{ event == 5002 }}"
+        sequence:
+          - service: light.turn_on
+            entity_id: !input "light"
+            data:
+              effect: "{{ effects[(effect_index + 1 ) % effect_count] }}"
+      - conditions: # Long press on right
+          - "{{ event == 5001 }}"
+        sequence: !input "button_left_long"
+      - conditions: # Previous effect
+          - "{{ event == 4002 }}"
+        sequence:
+          - service:
+            entity_id: !input "light"
+            data:
+              effect: "{{ effects[(effect_index - 1 ) % effect_count] }}"
+      - conditions: # Long press on left
+          - "{{ event == 4001 }}"
+        sequence: !input "button_left_long"
