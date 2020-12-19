@@ -150,11 +150,11 @@ action:
               effect: "{{ effects[(effect_index + 1 ) % effect_count] }}"
       - conditions: # Long press on right
           - "{{ event == 5001 }}"
-        sequence: !input "button_left_long"
+        sequence: !input "button_right_long"
       - conditions: # Previous effect
           - "{{ event == 4002 }}"
         sequence:
-          - service:
+          - service: light.turn_on
             entity_id: !input "light"
             data:
               effect: "{{ effects[(effect_index - 1 ) % effect_count] }}"
